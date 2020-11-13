@@ -1,0 +1,18 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: datagen
+spec:
+  template:
+    metadata:
+      labels:
+        dataset.0.id: "tpcds10g"
+        dataset.0.useas: "mount"
+    spec:
+      containers:
+      - name: datagen
+        image: res-drl-hpc-docker-local.artifactory.swg-devops.com/dlf/dsdgen:latest
+        env:
+          name: SCALE
+          value: "10g"
+        args: ["/mnt/datasets/tpcds10g",$SCALE]

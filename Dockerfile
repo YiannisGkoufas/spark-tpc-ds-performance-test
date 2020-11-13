@@ -2,7 +2,7 @@ FROM res-drl-hpc-docker-local.artifactory.swg-devops.com/spark:v3.0.0 AS build
 
 USER root
 
-ENV TPCDS_HOME=/opt/spark-tpc-ds-performance-test
+ENV TPCDS_HOME=/opt/spark/tpc-ds-performance-test
 
 RUN apt-get update && \
     apt-get -y install gcc make flex bison byacc git curl gnupg && \
@@ -24,16 +24,22 @@ RUN cd ${TPCDS_HOME}/src/toolkit/tools && \
 
 FROM res-drl-hpc-docker-local.artifactory.swg-devops.com/spark:v3.0.0
 
+ENV SPARK_HOME=/opt/spark
 ENV TPCDS_HOME=/opt/spark/tpc-ds-performance-test
 
-RUN mkdir -p ${TPCDS_HOME}/work
-COPY . ${TPCDS_HOME}
-WORKDIR ${TPCDS_HOME}
+USER root
+RUN mkdir -p ${SPARK_HOME}/work && \
+    mkdir -p ${TPCDS_HOME}} && \
+    chown -R 185:185 ${SPARK_HOME}
+USER 185
 
-COPY --from=build /opt/spark-tpc-ds-performance-test/src/toolkit/tools ${TPCDS_HOME}/src/toolkit/tools/
-COPY --from=build /opt/spark-tpc-ds-performance-test/target/scala-2.12/tpc-ds-benchmark-perf_2.12-0.1.jar ${TPCDS_HOME}
+#COPY . ${TPCDS_HOME}
 
+#COPY --from=build /opt/spark/tpc-ds-performance-test/src/toolkit/tools ${TPCDS_HOME}/src/toolkit/tools/
+COPY --from=build /opt/spark/tpc-ds-performance-test/target/scala-2.12/tpc-ds-benchmark-perf_2.12-0.1.jar /opt/spark/
+
+WORKDIR ${SPARK_HOME}
 #Configure tpcdsenv.sh
 #We will statically define tpcdsenv.sh
-ENTRYPOINT [ "/opt/spark-tpc-ds-performance-test/bin/tpcdsspark.sh" ]
-CMD ["3"]
+#ENTRYPOINT [ "/opt/spark/tpc-ds-performance-test/bin/tpcdsspark.sh" ]
+#CMD ["3"]

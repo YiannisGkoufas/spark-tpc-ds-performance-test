@@ -2,14 +2,13 @@ import scala.collection.mutable.ArrayBuffer
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.DataFrame
 
-class TPCDSBenchmark (val tpcdsRootDir: String) {
+class TPCDSBenchmark (val tpcdsRootDir: String, val tpcdsDatabaseName: String = "TPCDS1G") {
 
   // val tpcdsRootDir = "/opt/spark-tpc-ds-performance-test"
-  val tpcdsWorkDir = s"${tpcdsRootDir}/work"
+  val tpcdsWorkDir = s"/opt/spark/work"
   val tpcdsDdlDir = s"${tpcdsRootDir}/ddl/individual"
   val tpcdsGenDataDir = s"${tpcdsRootDir}/data"
   val tpcdsQueriesDir = s"${tpcdsRootDir}/queries"
-  val tpcdsDatabaseName = "TPCDS1G"
   var totalTime: Long = 0
   println("TPCDS root directory is at : "+ tpcdsRootDir)
   println("TPCDS ddl scripts directory is at: " + tpcdsDdlDir)
@@ -18,8 +17,8 @@ class TPCDSBenchmark (val tpcdsRootDir: String) {
   
   def clearTableDirectory(tableName: String): Unit = {
       import sys.process._
-      val commandStr1 = s"rm -rf spark-warehouse/tpcds2g.db/${tableName}/*"
-      val commandStr2 = s"rm -rf spark-warehouse/tpcds2g.db/${tableName}"
+      val commandStr1 = s"rm -rf spark-warehouse/${tpcdsDatabaseName.toLowerCase()}.db/${tableName}/*"
+      val commandStr2 = s"rm -rf spark-warehouse/${tpcdsDatabaseName.toLowerCase()}.db/${tableName}"
       var exitCode = Process(commandStr1).!
       exitCode = Process(commandStr2).!
   }
@@ -101,7 +100,8 @@ class TPCDSBenchmark (val tpcdsRootDir: String) {
 
   def runIndividualQuery(spark: SparkSession, queryNum: Int, resultDir: String = tpcdsWorkDir ): DataFrame = {
     import spark.implicits._
-    // spark.sql(s"USE ${tpcdsDatabaseName}")
+    
+    spark.sql(s"USE ${tpcdsDatabaseName}")
     val queryStr = "%02d".format(queryNum) 
     val testSummary = ArrayBuffer.empty[(String, Double, Int, String)] 
     try {      
@@ -180,6 +180,7 @@ class TPCDSBenchmark (val tpcdsRootDir: String) {
   }
 
   def createTables(spark: SparkSession, tables: Array[String]): Unit = {
+
     // Create database
     createDatabase(spark)
 
@@ -223,26 +224,26 @@ class TPCDSBenchmark (val tpcdsRootDir: String) {
 
   }
 
-  def createTableAndRunIndividualQuery(spark: SparkSession, tables: Array[String], queryNum: Int): Unit = {
+  def createTableAndRunIndividualQuery(spark: SparkSession, tables: Array[String], queryNum: Int, resultDir: String = tpcdsWorkDir): Unit = {
       import spark.implicits._
 
       createTables(spark, tables)
 
       spark.sql(s"USE ${tpcdsDatabaseName}")
        
-      val querySummary = runIndividualQuery(spark, queryNum, tpcdsWorkDir)
+      val querySummary = runIndividualQuery(spark, queryNum, resultDir)
 
       displayResult(spark, queryNum, querySummary)
   }
 
-  def createTableAndRunAllQueries(spark: SparkSession, tables: Array[String]): Unit = {
+  def createTableAndRunAllQueries(spark: SparkSession, tables: Array[String], resultDir: String = tpcdsWorkDir): Unit = {
     import spark.implicits._
 
     createTables(spark, tables)
 
     spark.sql(s"USE ${tpcdsDatabaseName}")
 
-    val allSummary = runAllQueries(spark, tpcdsWorkDir)
+    val allSummary = runAllQueries(spark, resultDir)
 
     displaySummary(allSummary)
   }
@@ -259,7 +260,7 @@ object SparkRunner{
         config("spark.sql.crossJoin.enabled", true).
         getOrCreate()
 
-    spark.sparkContext.setLogLevel("ERROR")
+    spark.sparkContext.setLogLevel("WARN")
     // TPC-DS table names.
     val tables = Array("call_center", "catalog_sales",
                       "customer_demographics", "income_band",
@@ -277,12 +278,18 @@ object SparkRunner{
 
     val arglist = args.toList
 
-    val benchmark = new TPCDSBenchmark(arglist(0))
+    val tpcdsdir = arglist(0)
+    val tpcdsdb = arglist(1)
 
-    arglist(1) match {
+    println(s"using database ${tpcdsdb}; data stored in ${tpcdsdir}/data")
+    val benchmark = new TPCDSBenchmark(tpcdsdir, tpcdsdb)
+    
+    arglist(2) match {
       case "1" => benchmark.createTables(spark, tables)
-      case "2" => benchmark.createTableAndRunIndividualQuery(spark, tables, arglist(2).toInt)
+      case "2" => benchmark.createTableAndRunIndividualQuery(spark, tables, arglist(3).toInt)
       case "3" => benchmark.createTableAndRunAllQueries(spark, tables)
+      case "4" => benchmark.displaySummary(benchmark.runIndividualQuery(spark, arglist(3).toInt))
+      case "5" => benchmark.displaySummary(benchmark.runAllQueries(spark))
     }
 
     spark.stop()

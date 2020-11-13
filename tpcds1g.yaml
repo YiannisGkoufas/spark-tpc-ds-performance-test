@@ -1,0 +1,12 @@
+---
+apiVersion: com.ie.ibm.hpsys/v1alpha1
+kind: Dataset
+metadata:
+    name: tpc-ds-1g
+spec:
+  local:
+    type: "COS"
+    accessKeyID: "e7f3903c10bc4e86b36ed2d10516d3a2"
+    secretAccessKey: "0478778757566c107905109e5e3de8dab3129e94632a6ab6"
+    endpoint: "http://s3.eu.cloud-object-storage.appdomain.cloud"
+    bucket: "dlf-tpcds1g"

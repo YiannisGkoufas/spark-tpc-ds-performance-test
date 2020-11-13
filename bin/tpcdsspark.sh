@@ -384,7 +384,7 @@ set_env() {
   set_environment
 }
 
-main() {
+main_interactive() {
   set_env
   while :
   do
@@ -418,6 +418,16 @@ EOF
       echo "Press any key to continue"
       read -n1 -s
   done
+}
+
+main() {
+  set_env
+  case "$1" in
+    "1")  create_spark_tables ;;
+    "2")  run_subset_tpcds_queries ;;
+    "3")  run_tpcds_queries ;;
+    "4")  cleanup_all ;;
+  esac
 }
 
 [[ "${BASH_SOURCE[0]}" == "${0}" ]] && main
