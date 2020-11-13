@@ -1,4 +1,4 @@
 #!/bin/bash
 
-cd v2.13.0rc1/tools/
+cd src/toolkit/tools/
 ./dsdgen -dir $1 -scale $2 -verbose Y -terminate N 
