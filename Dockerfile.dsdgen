@@ -1,0 +1,22 @@
+FROM ubuntu:18.04
+
+ENV TPCDS_HOME=/opt/tpcds-tools
+
+RUN apt-get update && \
+    apt-get -y install gcc make flex bison byacc git && \
+    mkdir /opt/tpcds-tools && \
+    groupadd -r tpcds --gid=1000 && \
+    useradd -r -g tpcds --uid=1000 -d ${TPCDS_HOME} tpcds && \
+    chown tpcds:tpcds -R ${TPCDS_HOME}
+
+COPY . ${TPCDS_HOME}
+WORKDIR ${TPCDS_HOME}
+
+RUN chmod a+x entrypoint.sh && \
+    cd ${TPCDS_HOME}/src/toolkit/tools && \
+    make clean && \
+    make OS=LINUX 
+
+ENTRYPOINT ["./entrypoint.sh"]
+CMD ["/mnt/data","1"]
+
