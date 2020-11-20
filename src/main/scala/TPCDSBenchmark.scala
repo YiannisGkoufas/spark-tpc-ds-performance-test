@@ -2,10 +2,10 @@ import scala.collection.mutable.ArrayBuffer
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.DataFrame
 
-class TPCDSBenchmark (val tpcdsRootDir: String, val tpcdsDatabaseName: String = "TPCDS1G") {
+class TPCDSBenchmark (val tpcdsRootDir: String, val tpcdsDatabaseName: String = "TPCDS1G", val tpcdsWorkDir: String = "/opt/spark/work") {
 
   // val tpcdsRootDir = "/opt/spark-tpc-ds-performance-test"
-  val tpcdsWorkDir = s"/opt/spark/work"
+  // val tpcdsWorkDir = s"/opt/spark/work"
   val tpcdsDdlDir = s"${tpcdsRootDir}/ddl/individual"
   val tpcdsGenDataDir = s"${tpcdsRootDir}/data"
   val tpcdsQueriesDir = s"${tpcdsRootDir}/queries"
@@ -253,11 +253,23 @@ object SparkRunner{
 
   def main(args: Array[String]) {
 
+    if (args.length == 0) {
+      println("No arguments specified")
+      sys.exit(1)
+    }
+
+    val arglist = args.toList
+
+    val tpcdsdir = arglist(0)
+    val tpcdsdb = arglist(1)
+    val tpcdsWorkDir = arglist(2)
+
     val spark = SparkSession.
         builder().
         config("spark.ui.showConsoleProgress", false).
         config("spark.sql.autoBroadcastJoinThreshold", -1).
         config("spark.sql.crossJoin.enabled", true).
+        config("spark.sql.warehouse.dir", arglist(3)).
         getOrCreate()
 
     spark.sparkContext.setLogLevel("WARN")
@@ -270,25 +282,15 @@ object SparkRunner{
                       "web_sales", "catalog_returns", "customer_address",
                       "household_demographics", "item", "ship_mode", "store_sales",
                       "web_page", "web_site" )
-    
-    if (args.length == 0) {
-      println("No arguments specified")
-      sys.exit(1)
-    }
-
-    val arglist = args.toList
-
-    val tpcdsdir = arglist(0)
-    val tpcdsdb = arglist(1)
 
     println(s"using database ${tpcdsdb}; data stored in ${tpcdsdir}/data")
-    val benchmark = new TPCDSBenchmark(tpcdsdir, tpcdsdb)
+    val benchmark = new TPCDSBenchmark(tpcdsdir, tpcdsdb, tpcdsWorkDir)
     
-    arglist(2) match {
+    arglist(4) match {
       case "1" => benchmark.createTables(spark, tables)
-      case "2" => benchmark.createTableAndRunIndividualQuery(spark, tables, arglist(3).toInt)
+      case "2" => benchmark.createTableAndRunIndividualQuery(spark, tables, arglist(5).toInt)
       case "3" => benchmark.createTableAndRunAllQueries(spark, tables)
-      case "4" => benchmark.displaySummary(benchmark.runIndividualQuery(spark, arglist(3).toInt))
+      case "4" => benchmark.displaySummary(benchmark.runIndividualQuery(spark, arglist(5).toInt))
       case "5" => benchmark.displaySummary(benchmark.runAllQueries(spark))
     }
 

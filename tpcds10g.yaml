@@ -2,7 +2,7 @@
 apiVersion: com.ie.ibm.hpsys/v1alpha1
 kind: Dataset
 metadata:
-    name: tpc-ds-10g
+    name: e220ac56
 spec:
   local:
     type: "COS"

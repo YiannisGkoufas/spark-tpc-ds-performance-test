@@ -2,7 +2,7 @@
 apiVersion: com.ie.ibm.hpsys/v1alpha1
 kind: Dataset
 metadata:
-    name: tpc-ds-1g
+  name: 64f541a0
 spec:
   local:
     type: "COS"

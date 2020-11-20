@@ -65,7 +65,9 @@ spec:
         - --conf
         - spark.jars.ivy=/tmp/.ivy
         - --conf
-        - spark.kubernetes.driver.label.dataset.0.id=tpc-ds-1g
+        - spark.kubernetes.driver.podTemplateFile=/opt/spark/tpc-ds-performance-test/podtemplate.yaml
+        - --conf
+        - spark.kubernetes.driver.label.dataset.0.id=64f541a0
         - --conf
         - spark.kubernetes.driver.label.dataset.0.useas=mount
         - --conf
@@ -92,10 +94,12 @@ spec:
         - spark.executor.cores=2
         - --conf 
         - spark.executor.memory=16g
+        - --conf
+        - spark.kubernetes.executor.podTemplateFile=/opt/spark/tpc-ds-performance-test/podtemplate.yaml
+        - --conf
+        - spark.kubernetes.executor.label.dataset.0.id=64f541a0 
         - --conf 
-        - spark.kubernetes.executor.label.dataset.0.id=tpc-ds-1g 
-        - --conf 
-        - spark.kubernetes.executor.label.dataset.0.useas=mount 
+        - spark.kubernetes.executor.label.dataset.0.useas=mount
         - --conf 
         - spark.kubernetes.executor.volumes.persistentVolumeClaim.tpcdspvc.options.claimName=tpcds-pvc
         - --conf 
@@ -111,6 +115,9 @@ spec:
         - --class
         - SparkRunner
         - local:///opt/spark/tpc-ds-benchmark-perf_2.12-0.1.jar 
-        - "/mnt/datasets/tpc-ds-1g" 
+        - "/mnt/datasets/64f541a0" 
         - "TPCDS1G"
-        - "3"
+        - "/opt/spark/work"
+        - "/opt/spark/warehouse"
+        - "2"
+        - "1"

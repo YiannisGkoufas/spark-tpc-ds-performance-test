@@ -18,9 +18,9 @@ RUN cd ${TPCDS_HOME} && \
     sbt package 
 
 #Compile the TPC DS tools
-RUN cd ${TPCDS_HOME}/src/toolkit/tools && \
-    make clean && \
-    make OS=LINUX
+#RUN cd ${TPCDS_HOME}/src/toolkit/tools && \
+#    make clean && \
+#    make OS=LINUX
 
 FROM res-drl-hpc-docker-local.artifactory.swg-devops.com/spark:v3.0.0
 
@@ -29,8 +29,9 @@ ENV TPCDS_HOME=/opt/spark/tpc-ds-performance-test
 
 USER root
 RUN mkdir -p ${SPARK_HOME}/work && \
-    mkdir -p ${TPCDS_HOME}} && \
+    mkdir -p ${TPCDS_HOME} && \
     chown -R 185:185 ${SPARK_HOME}
+COPY podtemplate.yaml ${TPCDS_HOME}
 USER 185
 
 #COPY . ${TPCDS_HOME}
