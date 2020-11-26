@@ -1,0 +1,20 @@
+---
+apiVersion: v1
+kind: Pod
+spec:
+    volumes:
+      - name: tpcdspvc
+        persistentVolumeClaim:
+          claimName: tpcds-pvc
+      - name: sparkwarehousepvc
+        persistentVolumeClaim:
+          claimName: spark-warehouse-dlf-pvc
+    containers:
+    - name: tpcds-perf-test
+      volumeMounts:
+        - name: tpcdspvc
+          mountPath: /opt/spark/work
+          readOnly: false
+        - name: sparkwarehousepvc
+          mountPath: /opt/spark/spark-warehouse
+          readOnly: false

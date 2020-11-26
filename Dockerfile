@@ -32,6 +32,7 @@ RUN mkdir -p ${SPARK_HOME}/work && \
     mkdir -p ${TPCDS_HOME} && \
     chown -R 185:185 ${SPARK_HOME}
 COPY podtemplate.yaml ${TPCDS_HOME}
+COPY podtemplate-volcano.yaml ${TPCDS_HOME}
 USER 185
 
 #COPY . ${TPCDS_HOME}

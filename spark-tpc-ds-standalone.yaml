@@ -65,9 +65,7 @@ spec:
         - --conf
         - spark.jars.ivy=/tmp/.ivy
         - --conf
-        - spark.kubernetes.driver.podTemplateFile=/opt/spark/tpc-ds-performance-test/podtemplate.yaml
-        - --conf
-        - spark.kubernetes.driver.label.dataset.0.id=64f541a0
+        - spark.kubernetes.driver.label.dataset.0.id=507b3965
         - --conf
         - spark.kubernetes.driver.label.dataset.0.useas=mount
         - --conf
@@ -95,9 +93,7 @@ spec:
         - --conf 
         - spark.executor.memory=16g
         - --conf
-        - spark.kubernetes.executor.podTemplateFile=/opt/spark/tpc-ds-performance-test/podtemplate.yaml
-        - --conf
-        - spark.kubernetes.executor.label.dataset.0.id=64f541a0 
+        - spark.kubernetes.executor.label.dataset.0.id=507b3965 
         - --conf 
         - spark.kubernetes.executor.label.dataset.0.useas=mount
         - --conf 
@@ -115,7 +111,7 @@ spec:
         - --class
         - SparkRunner
         - local:///opt/spark/tpc-ds-benchmark-perf_2.12-0.1.jar 
-        - "/mnt/datasets/64f541a0" 
+        - "/mnt/datasets/507b3965" 
         - "TPCDS1G"
         - "/opt/spark/work"
         - "/opt/spark/warehouse"
