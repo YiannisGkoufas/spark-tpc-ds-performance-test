@@ -1,0 +1,42 @@
+---
+apiVersion: v1
+kind: Pod
+spec:
+  affinity:
+    podAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 50
+        podAffinityTerm:
+          topologyKey: kubernetes.io/hostname
+          namespaces:
+            - rook-ceph
+            - dlf
+          labelSelector:
+            matchExpressions:
+            - key: "rgw"
+              operator: In
+              values: 
+              - "cda1bca6"
+  volumes:
+    - name: tpcdspvc
+      persistentVolumeClaim:
+        claimName: tpcds-pvc
+    - name: sparkwarehousepvc
+      persistentVolumeClaim:
+        claimName: spark-warehouse-dlf-pvc
+    - name: sparklogspvc
+      persistentVolumeClaim:
+        claimName: spark-logs-dlf-pvc
+  containers:
+  - name: tpcds-perf-test
+    volumeMounts:
+      - name: tpcdspvc
+        mountPath: /opt/spark/work
+        readOnly: false
+      - name: sparkwarehousepvc
+        mountPath: /opt/spark/spark-warehouse
+        readOnly: false
+      - name: sparklogspvc
+        mountPath: /opt/spark/logs
+        readOnly: false
+ 

@@ -17,6 +17,7 @@ class TPCDSBenchmark (val tpcdsRootDir: String, val tpcdsDatabaseName: String = 
   
   def clearTableDirectory(tableName: String): Unit = {
       import sys.process._
+      println("Removing old database files")
       val commandStr1 = s"rm -rf spark-warehouse/${tpcdsDatabaseName.toLowerCase()}.db/${tableName}/*"
       val commandStr2 = s"rm -rf spark-warehouse/${tpcdsDatabaseName.toLowerCase()}.db/${tableName}"
       var exitCode = Process(commandStr1).!
@@ -262,14 +263,16 @@ object SparkRunner{
 
     val tpcdsdir = arglist(0)
     val tpcdsdb = arglist(1)
-    val tpcdsWorkDir = arglist(2)
+    // val tpcdsWorkDir = arglist(2)
 
     val spark = SparkSession.
         builder().
         config("spark.ui.showConsoleProgress", false).
         config("spark.sql.autoBroadcastJoinThreshold", -1).
         config("spark.sql.crossJoin.enabled", true).
-        config("spark.sql.warehouse.dir", arglist(3)).
+        config("spark.eventLog.enabled", true).
+        config("spark.eventLog.dir", "/opt/spark/logs").
+        // config("spark.sql.warehouse.dir", arglist(3)).
         getOrCreate()
 
     spark.sparkContext.setLogLevel("WARN")
@@ -284,9 +287,9 @@ object SparkRunner{
                       "web_page", "web_site" )
 
     println(s"using database ${tpcdsdb}; data stored in ${tpcdsdir}/data")
-    val benchmark = new TPCDSBenchmark(tpcdsdir, tpcdsdb, tpcdsWorkDir)
+    val benchmark = new TPCDSBenchmark(tpcdsdir, tpcdsdb)
     
-    arglist(4) match {
+    arglist(2) match {
       case "1" => benchmark.createTables(spark, tables)
       case "2" => benchmark.createTableAndRunIndividualQuery(spark, tables, arglist(5).toInt)
       case "3" => benchmark.createTableAndRunAllQueries(spark, tables)

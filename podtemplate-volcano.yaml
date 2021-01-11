@@ -13,6 +13,9 @@ spec:
       - name: sparkwarehousepvc
         persistentVolumeClaim:
           claimName: spark-warehouse-dlf-pvc
+      - name: sparklogspvc
+        persistentVolumeClaim:
+          claimName: spark-logs-dlf-pvc
     containers:
     - name: tpcds-perf-test
       volumeMounts:
@@ -22,3 +25,7 @@ spec:
         - name: sparkwarehousepvc
           mountPath: /opt/spark/spark-warehouse
           readOnly: false
+        - name: sparklogspvc
+          mountPath: /opt/spark/logs
+          readOnly: false
+ 
